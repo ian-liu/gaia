@@ -4,6 +4,9 @@
 'use strict';
 
 var StatusBar = {
+  /* Timeout for 'recently active' indicators */
+  kActiveIndicatorTimeout: 60 * 1000,
+
   /* Whether or not status bar is actively updating or not */
   active: true,
 
@@ -15,20 +18,21 @@ var StatusBar = {
 
   wifiConnected: false,
 
+  geolocationActive: false,
+  geolocationTimer: null,
+
   init: function sb_init() {
     this.getAllElements();
-
-    window.addEventListener('screenchange', this);
-    this.setActive(true);
 
     var settings = {
       'ril.radio.disabled': ['signal', 'data'],
       'ril.data.enabled': ['data'],
-      'wifi.enabled': ['wifi', 'data'],
+      'wifi.enabled': ['wifi'],
       'bluetooth.enabled': ['bluetooth'],
       'tethering.usb.enabled': ['tethering'],
       'tethering.wifi.enabled': ['tethering'],
-      'tethering.wifi.stations.clients': ['tethering'],
+      'tethering.wifi.connectedClients': ['tethering'],
+      'tethering.usb.connectedClients': ['tethering'],
       'audio.volume.master': ['mute'],
       'alarm.enabled': ['alarm']
     };
@@ -46,8 +50,13 @@ var StatusBar = {
             );
           }
         );
+        self.settingValues[settingKey] = false;
       })(settingKey);
     }
+
+    window.addEventListener('screenchange', this);
+    window.addEventListener('mozChromeEvent', this);
+    this.setActive(true);
   },
 
   handleEvent: function sb_handleEvent(evt) {
@@ -70,6 +79,13 @@ var StatusBar = {
         this.update.data.call(this);
         break;
 
+      case 'mozChromeEvent':
+        if (evt.detail.type !== 'geolocation-status')
+          return;
+
+        this.geolocationActive = evt.detail.active;
+        this.update.geolocation.call(this);
+        break;
     }
   },
 
@@ -105,7 +121,6 @@ var StatusBar = {
       if (bluetooth) {
         // XXX need a reliable way to see if bluetooth is currently
         // connected or not here.
-
         this.update.bluetooth.call(this);
       }
     } else {
@@ -159,20 +174,27 @@ var StatusBar = {
       var voice = conn.voice;
       var icon = this.icons.signal;
       var flightModeIcon = this.icons.flightMode;
+      var connLabel = this.icons.conn;
+      var _ = navigator.mozL10n.get;
 
       if (this.settingValues['ril.radio.disabled']) {
         icon.hidden = true;
+        connLabel.hidden = true;
         flightModeIcon.hidden = false;
         return;
       }
 
-      icon.hidden = false;
       flightModeIcon.hidden = true;
 
       icon.dataset.roaming = voice.roaming;
-      if (voice.relSignalStrength === 0 && !voice.connected) {
-        icon.dataset.level = '-1';
+      if (!voice.connected && !voice.emergencyCallsOnly) {
+        icon.hidden = true;
+        connLabel.hidden = false;
+        connLabel.dataset.l10nId = 'searching';
+        connLabel.textContent = _('searching') || '';
       } else {
+        icon.hidden = false;
+        connLabel.hidden = true;
         icon.dataset.level = Math.floor(voice.relSignalStrength / 20); // 0-5
       }
     },
@@ -185,7 +207,8 @@ var StatusBar = {
       var data = conn.data;
       var icon = this.icons.data;
 
-      if (!this.settingValues['ril.data.enabled'] ||
+      if (this.settingValues['ril.radio.disabled'] ||
+          !this.settingValues['ril.data.enabled'] ||
           this.wifiConnected || !data.connected) {
         icon.hidden = true;
 
@@ -248,16 +271,23 @@ var StatusBar = {
       if (!this.settingValues['wifi.enabled']) {
         icon.hidden = true;
 
+        var updateData = this.wifiConnected;
+        this.wifiConnected = false;
+        if (updateData)
+          this.update.data.call(this);
+
         return;
       }
 
-      var network = wifiManager.connection.network;
-      this.wifiConnected = !!network;
+      var connected = !!wifiManager.connection.network;
+      var updateData = (this.wifiConnected !== connected);
+
+      this.wifiConnected = connected;
+      if (updateData)
+        this.update.data.call(this);
 
       if (!this.wifiConnected) {
         icon.hidden = true;
-        this.update.data.call(this);
-
         return;
       }
 
@@ -282,11 +312,9 @@ var StatusBar = {
       icon.hidden = !(this.settingValues['tethering.usb.enabled'] ||
                       this.settingValues['tethering.wifi.enabled']);
 
-      // XXX no way to probe active state from USB tethering for now
-      // 'tethering.usb.active'??
-
       icon.dataset.active =
-        (this.settingValues['tethering.wifi.stations.clients'] !== 0);
+        (this.settingValues['tethering.wifi.connectedClients'] !== 0) ||
+        (this.settingValues['tethering.usb.connectedClients'] !== 0);
     },
 
     bluetooth: function sb_updateBluetooth() {
@@ -321,9 +349,22 @@ var StatusBar = {
     },
 
     geolocation: function sb_updateGeolocation() {
-      // XXX no way to probe active state of Geolocation
-      // this.icon.geolocation.hidden = ?
-      // this.icon.geolocation.dataset.active = ?;
+      window.clearTimeout(this.geolocationTimer);
+
+      var icon = this.icons.geolocation;
+      icon.dataset.active = this.geolocationActive;
+
+      if (this.geolocationActive) {
+        // Geolocation is currently active, show the active icon.
+        icon.hidden = false;
+        return;
+      }
+
+      // Geolocation is currently inactive.
+      // Show the inactive icon and hide it after kActiveIndicatorTimeout
+      this.geolocationTimer = window.setTimeout(function hideGeoIcon() {
+        icon.hidden = true;
+      }, this.kActiveIndicatorTimeout);
     },
 
     usb: function sb_updateUsb() {
@@ -350,7 +391,7 @@ var StatusBar = {
   getAllElements: function sb_getAllElements() {
     // ID of elements to create references
     var elements = ['notification', 'time',
-    'battery', 'wifi', 'data', 'flight-mode', 'signal',
+    'battery', 'wifi', 'data', 'flight-mode', 'conn', 'signal',
     'tethering', 'alarm', 'bluetooth', 'mute',
     'recording', 'sms', 'geolocation', 'usb'];
 

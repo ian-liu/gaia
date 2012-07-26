@@ -271,6 +271,11 @@ var WindowManager = (function() {
       setOrientationForApp(newApp);
     }
 
+    // Exit fullscreen mode if we're going to the homescreen
+    if (newApp === null && document.mozFullScreen) {
+      document.mozCancelFullScreen();
+    }
+
     displayedApp = origin;
 
     // Update the loading icon since the displayedApp is changed
@@ -342,92 +347,147 @@ var WindowManager = (function() {
       //   https://bugzilla.mozilla.org/show_bug.cgi?id=761925
       // Cross-process fullscreen
       //   https://bugzilla.mozilla.org/show_bug.cgi?id=684620
-      // Cross-process IME
-      //   https://bugzilla.mozilla.org/show_bug.cgi?id=761927
-      // Cross-process MediaStorage
-      //   https://bugzilla.mozilla.org/show_bug.cgi?id=761930
-      // Cross-process settings
-      //   https://bugzilla.mozilla.org/show_bug.cgi?id=743018
-      // Mouse click not delivered
-      //   https://bugzilla.mozilla.org/show_bug.cgi?id=761934
       // Nested content processes
       //   https://bugzilla.mozilla.org/show_bug.cgi?id=761935
       // Stop audio when app dies
       //   https://bugzilla.mozilla.org/show_bug.cgi?id=761936
-      // WebGL texture sharing:
-      //   https://bugzilla.mozilla.org/show_bug.cgi?id=728524
+      // w->mApp Assertion
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=775576
+      // Gallery App crash (in IndexedDB)
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=775591
+      // Electrolysize b2g-bluetooth
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=755943
+      // VolumeService doesn't work when called OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=775833
+      // Message App crashes when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=775997
+      // Dialer doesn't seem to see touches when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776069
+      // ICS camera support
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=740997
+      // Marketplace app doesn't seem to work when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776086
+      // Keyboard always shows up alpha when app using keyboard is run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776118
+      // Keyboard doesn't show up correctly when app run OOP
+      //   https://github.com/mozilla-b2g/gaia/issues/2656
+      // UI Test app - Insert Fake Contacts hangs when run OOP (or not OOP)
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776128
+      // UI Test - window.open doesn't work properly when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776129
+      // UI Test app - window.close test causes seg fault when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776132
+      // UI Test App - Notifications don't work properly when run OOP
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=776134
 
       //'Browser',
-      //   Cross-process IME
-      //   Nested content processes
+      // - Needs Nested Content Process (bug 761935) for OOP
 
-      'Calculator'
+      'Calculator',
+      'Calendar',
 
       //'Camera',
+      // - Camera app doesn't work yet on otoro - bug 740997
+      // - When run OOP, VolumeService dies - bug 775833
       //   Cross-process camera control
       //   Cross-process preview stream
 
       //'Clock',
-      //   Cross-process IME (to program alarm)
+      //  - OOP - asserts on w->mApp (bug 775576)
 
-      //'CrystalSkull',
-      //   WebGL texture sharing (for full perf)
+      //'Contacts',
+      // System message handler (for WebActivities) doesn't get called
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=777195
+      // Keyboard always shows up alpha when app using keyboard is run OOP
+      // - bug 776118
 
-      //'CubeVid',
+      'CrystalSkull',
+
+      'CubeVid',
+      // - Doesn't crash when run OOP, but audio is extremely choppy
       //   Stop audio when app dies
-      //   WebGL texture sharing (for full perf)
 
       //'Cut The Rope',
+      // - Doesn't seem to work when non-OOP so didn't test OOP
+      // - couldn't test OOP - since wifi wasn't working
       //   Mouse click not delivered
       //   Stop audio when app dies
+
+      'Dev Marketplace',
 
       //'Dialer',
-      //   Crash when placing call
-      //   ...
+      // - Dialer doesn't seem to see touches when running OOP - bug 776069
+
+      //'E-Mail',
+      // - SSL/TLS support can only happen in the main process although the TCP
+      //   support without security will accidentally work OOP:
+      //   https://bugzilla.mozilla.org/show_bug.cgi?id=770778
+
+      'FM Radio',
+
+      'Galactians2',  // Install from Dev Marketplace
 
       //'Gallery',
-      //   Cross-process MediaStorage
+      // - When running OOP, doesn't detect any photos or crashes - bug 775591
+      // - When running OOP, VolumeService dies - bug 775833
 
-      //'Keyboard'
-      //   Cross-process IME
+      'Homescreen',
+      'Keyboard',
 
-      //'Market',
-      //   Cross-process IME
-      //   Cross-process mozApps
+      //'Marketplace',
+      // - When running OOP - After trying to Login/Register, never get to
+      //   persona scren - bug 776086
+      // - When running OOP - Sometimes get w->mApp assert (bug 775576)
 
       //'Messages',
-      //   Cross-process IME
+      // - crashes when launched OOP on otoro - bug 775997
 
       //'Music',
-      //   Cross-process MediaStorage
-      //   Stop audio when app dies
+      // - When running OOP, VolumeService dies - bug 775833
 
-      //'PenguinPop',
-      //   Mouse click not delivered
-      //   Stop audio when app dies
+      'PenguinPop',
 
       //'Settings',
-      //   Cross-process IME
-      //   Cross-process settings
+      // Most of settings seems to work OOP.
+      // However, apprarently bluetooth doesn't - bug 755943
 
-      //'Tasks',
-      //   Cross-process IME
+      //'Staging Marketplace',
+      // - When running OOP - After trying to Login/Register, never get to
+      //   persona scren - bug 776086
+      // - When running OOP - After trying to Login/Register, got white screen
+      // - Works ok when running non-OOP
 
-      //'Template',
-      //   Run this in or out of process, depending on what you want
-      //   to test.
+      //'System',
 
-      //'TowerJelly',
-      //   Mouse click not delivered
+      'Tasks',
+      'Template',
+      //'Test Agent',
+      'TowerJelly'
+
+      //'UI tests',
+      // Keyboard always shows up alpha when app using keyboard is running OOP
+      //   - bug 776118
+      // Insert Fake Contacts hangs when running OOP (or not OOP)
+      //   - bug 776128
+      // UI Test - window.open doesn't work properly when running OOP
+      //   - bug 776129
+      // UI Test app - window.close test causes seg fault when running OOP
+      //   - bug 776132
+      // UI Test App - Notifications don't work properly when running OOP
+      //   - bug 776134
 
       //'Video',
-      //   Cross-process fullscreen
-      //   Cross-process MediaStorage
+      // - When running OOP, VolumeService dies - bug 775833
+      //   OOP - Assertion failure: w->mApp,
+      //         at /home/work/B2G-otoro/gecko/dom/base/nsGlobalWindow.cpp:10697
       //   Stop audio when app dies
     ];
     if (outOfProcessWhitelist.indexOf(name) >= 0) {
       // FIXME: content shouldn't control this directly
       frame.setAttribute('remote', 'true');
+      console.info('%%%%% Launching', name, 'as remote (OOP)');
+    } else {
+      console.info('%%%%% Launching', name, 'as local');
     }
 
     // Add the iframe to the document
@@ -484,8 +544,6 @@ var WindowManager = (function() {
   // There are two types of mozChromeEvent we need to handle
   // in order to launch the app for Gecko
   window.addEventListener('mozChromeEvent', function(e) {
-    console.log('mozChromeEvent received: ' + e.detail.type);
-
     var origin = e.detail.origin;
     if (!origin)
       return;
@@ -552,11 +610,7 @@ var WindowManager = (function() {
                       app.manifest.name, app.manifest, app.manifestURL, true);
         }
 
-        // TODO: handle the inline disposition
-        if (e.detail.disposition) {
-          setDisplayedApp(origin);
-        }
-
+        setDisplayedApp(origin);
         break;
     }
   });
@@ -651,140 +705,24 @@ var WindowManager = (function() {
     });
   });
 
-  // Listen for the Back button.  We need both a capturing listener
-  // and a regular listener for this.  If the card switcher (or some
-  // other overlay) is displayed, the capturing listener can intercept
-  // the back key and use it to take down the overlay.  Otherwise, the
-  // back button should go to the displayed app first, so it can use
-  // it if it has more than one screen.  Finally, if the event bubbles
-  // is not cancelled and bubbles back up to the window, we use it to
-  // switch from an app back to the homescreen.
-  //
-  // FIXME: I'm using key up here because the other apps do that.
-  // But I think for back we should use keydown.  Keyup is only for
-  // the Home key since we want to distinguish long from short on that one.
-  //
-  // FIXME: some other apps use capturing listeners for Back.
-  //   they should be changed to use non-capturing, I think.
-  //   See https://github.com/andreasgal/gaia/issues/753
-  //
-  //   Also, we may not event need a capturing listener here. This might
-  //   be a focus management issue instead:
-  //   https://github.com/andreasgal/gaia/issues/753#issuecomment-4559674
-  //
-  // This is the capturing listener for Back.
-  // TODO: right now this only knows about the card switcher, but
-  // there might be other things that it needs to be able to dismiss
-  //
-  window.addEventListener('keyup', function(e) {
-    if (e.keyCode === e.DOM_VK_ESCAPE && CardsView.cardSwitcherIsShown()) {
+  window.addEventListener('home', function(e) {
+    // If the lockscreen is active, it will stop propagation on this event
+    // and we'll never see it here. Similarly, other overlays may use this
+    // event to hide themselves and may prevent the event from getting here.
+    // Note that for this to work, the lockscreen and other overlays must
+    // be included in index.html before this one, so they can register their
+    // event handlers before we do.
+    setDisplayedApp(null);
+    if (CardsView.cardSwitcherIsShown())
       CardsView.hideCardSwitcher();
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  }, true);
-
-  // The non capturing Back key handler.
-  window.addEventListener('keyup', function(e) {
-    // If we see the Back key, and it hasn't been cancelled, and there
-    // is an app displayed, then hide the app and go back to the
-    // homescreen. Unlike the Home key, apps can intercept this event
-    // and use it for their own purposes.
-    if (e.keyCode === e.DOM_VK_ESCAPE &&
-        !e.defaultPrevented &&
-        displayedApp !== null) {
-
-      setDisplayedApp(null); // back to the homescreen
-    }
   });
 
-  // Handle the Home key with capturing event listeners so that
-  // other homescreen modules never even see the key.
-  (function() {
-    var timer = null;
-    var keydown = false;
-
-    window.addEventListener('keydown', keydownHandler, true);
-    window.addEventListener('keyup', keyupHandler, true);
-
-    // The screenshot module also listens for the HOME key.
-    // If it is pressed along with SLEEP, then it will call preventDefault()
-    // on the keyup event and possibly also on the keydown event.
-    // So we try to ignore these already handled events, but have to
-    // pay attention if a timer has already been set, we can't just ignore
-    // a handled keyup, we've got to clear the timer.
-
-    function keydownHandler(e) {
-      if (e.keyCode !== e.DOM_VK_HOME || e.defaultPrevented)
-        return;
-
-      // We don't do anything else until the Home key is released...
-      // If there is not a timer running, start one so we can
-      // measure how long the key is held down for.  If there is
-      // already a timer running, then this is a key repeat event
-      // during a long Home key press and we ignore it.
-      if (!keydown) {
-        timer = window.setTimeout(longPressHandler, kLongPressInterval);
-        keydown = true;
-      }
-
-      // Exit fullscreen mode
-      if (document.mozFullScreen) {
-        document.mozCancelFullScreen();
-      }
-
-      // No one sees the HOME key but us
-      e.stopPropagation();
-      e.preventDefault();  // Don't generate the keypress event
+  window.addEventListener('holdhome', function(e) {
+    if (!LockScreen.locked &&
+        !CardsView.cardSwitcherIsShown()) {
+      CardsView.showCardSwitcher();
     }
-
-    function keyupHandler(e) {
-      if (e.keyCode !== e.DOM_VK_HOME)
-        return;
-
-      if (!keydown) // the keydown event was defaultPrevented, so
-        return;     // we can ignore this keyup
-
-      keydown = false;
-
-      // If the key was released before the timer, then this was
-      // a short press. Show the homescreen and cancel the timer.
-      // Otherwise it was a long press that was handled in the timer
-      // function so just ignore it.
-      if (timer !== null) {
-        clearInterval(timer);
-        timer = null;
-
-        // If the screen is locked, ignore the home button.
-        // If the event has defualtPrevented (from the screenshot module)
-        // the we also itnore it
-        // Otherwise, make the homescreen visible.
-        // Also, if the card switcher is visible, then hide it.
-        if (!LockScreen.locked && !e.defaultPrevented) {
-          // The attention screen can 'eat' this event
-          if (!e.defaultPrevented)
-            setDisplayedApp(null);
-          if (CardsView.cardSwitcherIsShown())
-            CardsView.hideCardSwitcher();
-        }
-      }
-
-      // No one ever sees the HOME key but us
-      e.stopPropagation();
-    }
-
-    function longPressHandler() {
-      // If the timer fires, then this was a long press on the home key
-      // So bring up the app switcher overlay if we're not locked
-      // and if the card switcher is not already shown
-      timer = null;
-
-      if (!LockScreen.locked &&
-          !CardsView.cardSwitcherIsShown()) {
-        CardsView.showCardSwitcher();
-      }
-    }
-  }());
+  });
 
   // Return the object that holds the public API
   return {

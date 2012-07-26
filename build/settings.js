@@ -6,9 +6,9 @@
 
 'use strict';
 
-const DEBUG = false;
+const SETTINGS_DEBUG = false;
 function debug(msg) {
-  if (DEBUG)
+  if (SETTINGS_DEBUG)
     dump("-*- Populate SettingsDB: " + msg + "\n");
 }
 
@@ -67,7 +67,8 @@ var settings = [
  new Setting("sms.vibration.received", true),
  new Setting("tethering.usb.enabled", false),
  new Setting("tethering.wifi.enabled", false),
- new Setting("tethering.wifi.stations.clients", 0),
+ new Setting("tethering.wifi.connectedClients", 0),
+ new Setting("tethering.usb.connectedClients", 0),
  new Setting("ums.enabled", false),
  new Setting("ums.mode", ""),
  new Setting("wifi.enabled", true),
