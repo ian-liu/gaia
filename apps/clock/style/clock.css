@@ -310,21 +310,21 @@ html * {
   width: 100%;
   height: 100%;
   color: black;
-  background-image: url(images/clockBG.png);
-  background-size: 100%;
+  background-image: url(images/clockBackground.png);
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   border-bottom: 0.2rem solid #ACACAC;
   text-align: center;
 }
 
-#digital-clock-bg {
+#digital-clock-background {
   background: none;
 }
 
-#digital-clock-bg.visible {
+#digital-clock-background.visible {
   height: 48%;
   background-size: 100% 100%;
-  background-image: url(images/digitalClockBG.png);
+  background-image: url(images/digitalClockBackground.png);
   box-shadow: 0 0.4rem 0.6rem -0.6rem black;
 }
 
@@ -339,7 +339,7 @@ html * {
 
 #digital-clock-display {
   position: absolute;
-  margin-left: 13%;
+  margin-left: 14%;
   background-image: url(images/alarmIndicator.png);
   background-repeat: no-repeat;  
   background-position: 103% -4%;

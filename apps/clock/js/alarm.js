@@ -46,9 +46,10 @@ var ClockView = {
     return this.alarmNewBtn = document.getElementById('alarm-new');
   },
 
-  get digitalClockBG() {
-    delete this.digitalClockBG;
-    return this.digitalClockBG = document.getElementById('digital-clock-bg');
+  get digitalClockBackground() {
+    delete this.digitalClockBackground;
+    return this.digitalClockBackground =
+      document.getElementById('digital-clock-background');
   },
 
   init: function cv_init() {
@@ -56,7 +57,7 @@ var ClockView = {
     this.updateDigitalClock();
     this._clockMode = 'digital';
     this.digitalClock.classList.add('visible'); /* digital clock is default */
-    this.digitalClockBG.classList.add('visible');
+    this.digitalClockBackground.classList.add('visible');
     this.analogClock.classList.remove('visible');
     document.addEventListener('mozvisibilitychange', this);
     this.digitalClock.addEventListener('click', this);
@@ -152,7 +153,7 @@ var ClockView = {
             window.clearTimeout(this._updateDigitalClockTimeout);
             this.digitalClock.removeEventListener('click', this);
             this.digitalClock.classList.remove('visible');
-            this.digitalClockBG.classList.remove('visible');
+            this.digitalClockBackground.classList.remove('visible');
             this.updateAnalogClock();
             this._clockMode = 'analog';
             this.analogClock.classList.add('visible');
@@ -166,7 +167,7 @@ var ClockView = {
             this.updateDigitalClock();
             this._clockMode = 'digital';
             this.digitalClock.classList.add('visible');
-            this.digitalClockBG.classList.add('visible');
+            this.digitalClockBackground.classList.add('visible');
             this.digitalClock.addEventListener('click', this);
             break;
         }
