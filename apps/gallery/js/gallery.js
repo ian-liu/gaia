@@ -864,7 +864,6 @@ $('thumbnails-share-button').onclick = function() {
     var index = parseInt(selected[i].dataset.index);
     filenames.push(images[index].name);
   }
-
   shareFiles(filenames);
 };
 
@@ -878,7 +877,9 @@ $('thumbnails-share-button').onclick = function() {
  */
 function shareFiles(filenames) {
   var urls = [];
-  getDataURLForNextFile();
+  // console.log('Hack Gallary to transfer files with filenames: ' + filenames);
+  shareURLs(filenames);
+  //getDataURLForNextFile();
 
   function getDataURLForNextFile() {
     if (urls.length === filenames.length) {
@@ -902,11 +903,12 @@ function shareFiles(filenames) {
 // This is called by shareFile once the filenames have
 // been converted to data URLs
 function shareURLs(urls) {
+  console.log("Hack Gallary to transfer files with urls: " + urls);
   var a = new MozActivity({
-    name: 'share',
+    name: 'transfer', // 'share'
     data: {
-      type: 'image/*',
-      number: urls.length,
+      type: 'pictures', // 'image/*',
+      //number: urls.length,
       urls: urls
     }
   });
