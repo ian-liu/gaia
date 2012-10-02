@@ -25,6 +25,7 @@
   "permissions": [
     "settings",
     "bluetooth",
+    "mozBluetooth",
     "device-storage:pictures",
     "device-storage:music"
   ]

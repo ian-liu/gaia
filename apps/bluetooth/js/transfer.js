@@ -182,8 +182,10 @@ window.addEventListener('localized', function showPanel() {
         console.log('transferToDevice(): getMediaRequest success');
         var url = URL.createObjectURL(getMediaRequest.result);
         console.log('transferToDevice(): url = ' + url);
+        console.log('transferToDevice(): getMediaRequest.result = ' + getMediaRequest.result);
         // defaultAdapter.sendFile(targetDevice.address, blob);
-        defaultAdapter.sendFile(targetDevice.address, url);
+        // defaultAdapter.sendFile(targetDevice.address, url);
+        defaultAdapter.sendFile(targetDevice.address, getMediaRequest.result);
         console.log('transferToDevice(): called sendFile():');
         endTransfer();
       };
