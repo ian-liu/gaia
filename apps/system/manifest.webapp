@@ -78,5 +78,7 @@
       "description": "Main System"
     }
   },
-  "default_locale": "en-US"
+  "default_locale": "en-US",
+  "messages": ["bluetooth-opp-transfer-complete",
+  			   "bluetooth-opp-update-progress"]
 }
