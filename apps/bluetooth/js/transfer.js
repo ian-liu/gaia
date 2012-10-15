@@ -26,20 +26,27 @@ window.addEventListener('localized', function showPanel() {
     activity = activityRequest;
     isBluetoothEnabled();
   });
-  
-  var dialogConfirmBluetooth = document.getElementById('confirm-view');
+
+  var dialogConfirmBluetooth = document.getElementById('enable-bluetooth-view');
+  var bluetoothCancelButton = document.getElementById('enable-bluetooth-button-cancel');
+  var bluetoothTurnOnButton = document.getElementById('enable-bluetooth-button-turn-on');
   var dialogAlertView = document.getElementById('alert-view');
-  var cancelButton = document.getElementById('button-cancel');
-  var turnOnButton = document.getElementById('button-turn-on');
-  var okButton = document.getElementById('button-ok');
-  var deviceSelect = document.createElement('select');
+  var alertOkButton = document.getElementById('alert-button-ok');
+  var deviceSelect = null;
   var dialogDeviceSelector = document.getElementById('value-selector');
   var deviceSelectorContainers = document.getElementById('value-selector-container');
   var optionsContainer = document.querySelector('#value-selector-container ol');
-  var optionsTitle = document.querySelector('#value-selector-container h1');
-  var deviceCancelButton = document.getElementById('device-select-cancel');
-  var deviceOkButton = document.getElementById('device-select-ok');
+  var deviceCancelButton = document.getElementById('device-select-button-cancel');
+  var deviceOkButton = document.getElementById('device-select-button-ok');
+  var _debug = false;
 
+  function debug(msg) {
+    if (!_debug)
+      return;
+
+    console.log('===Bluetooth SendFile===: ' + msg);
+  }
+  
   function isBluetoothEnabled() {
     // get bluetooth status
     var req = settings.createLock().get('bluetooth.enabled');
@@ -51,10 +58,11 @@ window.addEventListener('localized', function showPanel() {
         console.log('isBluetoothEnabled(): OFF-->confirmTurnBluetoothOn():');
         confirmTurnBluetoothOn();
       }
-    }
+    };
     req.onerror = function bt_EnabledOnerror() {
-      console.log('BluetoothEnabled(): fail');
-    }
+      var msg = 'Can not get bluetooth.enabled from setting!';
+      cannotTransfer(msg);
+    };
   }
   
   function browsePairedDevices() {
@@ -64,17 +72,16 @@ window.addEventListener('localized', function showPanel() {
   
   function confirmTurnBluetoothOn() {
     dialogConfirmBluetooth.hidden = false;
-    cancelButton.addEventListener('click', cancelTransfer);
-    turnOnButton.addEventListener('click', turnOnBluetooth);
+    bluetoothCancelButton.addEventListener('click', cancelTransfer);
+    bluetoothTurnOnButton.addEventListener('click', turnOnBluetooth);
   }
   
   function turnOnBluetooth() {
-    // evt.preventDefault();
     dialogConfirmBluetooth.hidden = true;
     settings.createLock().set({'bluetooth.enabled': true});
     //XXX should be removed
     hackForTest(true);
-    // DOTO: Show Turn Bluetooth ON Dialog.
+    // TODO: Show Turn Bluetooth ON Dialog.
   }
   
   //XXX hack due to the following bugs.
@@ -103,7 +110,8 @@ window.addEventListener('localized', function showPanel() {
       if (defaultAdapter == null) {
         // we can do nothing without DefaultAdapter, so set bluetooth disabled
         settings.createLock().set({'bluetooth.enabled': false});
-        console.log('Get null bluetooth adapter!');
+        var msg = 'Get null bluetooth adapter!';
+        cannotTransfer(msg);
         return;
       }
       getPairedDevice();
@@ -111,8 +119,9 @@ window.addEventListener('localized', function showPanel() {
     req.onerror = function bt_getAdapterFailed() {
       // we can do nothing without DefaultAdapter, so set bluetooth disabled
       settings.createLock().set({'bluetooth.enabled': false});
-      console.log('Can not get bluetooth adapter!');
-    }
+      var msg = 'Can not get bluetooth adapter!';
+      cannotTransfer(msg);
+    };
   }
   
   function cancelTransfer() {
@@ -122,21 +131,22 @@ window.addEventListener('localized', function showPanel() {
     endTransfer();
   }
   
-  function cannotTransfer() {
+  function cannotTransfer(msg) {
+    debug(msg);
     dialogAlertView.hidden = false;
-    okButton.addEventListener('click', okToCloseAlart);
+    alertOkButton.addEventListener('click', closeAlart);
   }
   
-  function okToCloseAlart() {
+  function closeAlart() {
     dialogAlertView.hidden = true;
-    okButton.removeEventListener('click', okToCloseAlart);
+    alertOkButton.removeEventListener('click', closeAlart);
     activity.postError('cancelled');
     endTransfer();
   }
 
   function endTransfer() {
-    cancelButton.removeEventListener('click', cancelTransfer);
-    turnOnButton.removeEventListener('click', turnOnBluetooth);
+    bluetoothCancelButton.removeEventListener('click', cancelTransfer);
+    bluetoothTurnOnButton.removeEventListener('click', turnOnBluetooth);
     activity = null;
   }
   
@@ -147,10 +157,12 @@ window.addEventListener('localized', function showPanel() {
       pairList.index = req.result;
       var length = pairList.index.length;
       if (length == 0) {
-        console.log('There is no paired device! Please pair your bluetooth device first.');
+        var msg = 'There is no paired device! Please pair your bluetooth device first.';
+        cannotTransfer(msg);
         return;
       }
       // Put the list to value selector
+      deviceSelect = document.createElement('select');
       for (var i = 0; i < length; i++) {
         (function(device) {
           deviceSelect.options[i] = new Option(device.name, i);
@@ -158,18 +170,16 @@ window.addEventListener('localized', function showPanel() {
       }
       deviceSelect.selectedIndex = 0;
       buildOptions(deviceSelect.options);
-      showPairDeviceSelector();
+      showHidePairDeviceSelector(true);
     };
     req.onerror = function () {
-      console.log('getPairedDevice(): defaultAdapter.getPairedDevices() onerror');
+      var msg = 'Can not get paired devices from adapter.';
+      cannotTransfer(msg);
     };
   }
   
-  
   function buildOptions(options) {
-
     var optionHTML = '';
-
     function escapeHTML(str) {
       var span = document.createElement('span');
       span.textContent = str;
@@ -187,7 +197,6 @@ window.addEventListener('localized', function showPanel() {
                     '</li>';
     }
     optionsContainer.innerHTML = optionHTML;
-
     // Apply different style when the options are more than 1 page
     if (options.length > 5) {
       deviceSelectorContainers.classList.add('scrollable');
@@ -196,39 +205,18 @@ window.addEventListener('localized', function showPanel() {
     }
   }
   
-  function getPairedDevice_Old() {
-    console.log('getPairedDevice_Old():');
-    var req = defaultAdapter.getPairedDevices();
-    req.onsuccess = function bt_getPairedSuccess() {
-      pairList.index = req.result;
-      var length = pairList.index.length;
-      if (length == 0) {
-        console.log('There is no paired device! Please pair your bluetooth device first.');
-        return;
-      }
-      
-      // Put the list to value selector
-      for (var i = 0; i < length; i++) {
-        (function(device) {
-          deviceSelect.options[i] = new Option(device.name, i);
-        })(pairList.index[i]);
-      }
-      //XXX Workaround to create an indicator option since there's no change/confirm event when select tag applied 
-      deviceSelect.options[length] = new Option('Please select a paired device.', 'none');
-      deviceSelect.selectedIndex = length;
-      showPairDeviceSelector();
-    };
-    
-    req.onerror = function () {
-      console.log('getPairedDevice(): defaultAdapter.getPairedDevices() onerror');
-    };
-  }
-  
-  function showPairDeviceSelector () {
-    dialogDeviceSelector.hidden = false;
-    deviceSelectorContainers.addEventListener('click', handleSelect);
-    deviceCancelButton.addEventListener('click', cancelTransfer);
-    deviceOkButton.addEventListener('click', transferToDevice);
+  function showHidePairDeviceSelector (enabled) {
+    if (enabled) {
+      dialogDeviceSelector.hidden = false;
+      deviceSelectorContainers.addEventListener('click', handleSelect);
+      deviceCancelButton.addEventListener('click', cancelTransfer);
+      deviceOkButton.addEventListener('click', transferToDevice);  
+    } else {
+      dialogDeviceSelector.hidden = true;
+      deviceSelectorContainers.removeEventListener('click', handleSelect);
+      deviceCancelButton.removeEventListener('click', cancelTransfer);
+      deviceOkButton.removeEventListener('click', transferToDevice);
+    }
   }
   
   function handleSelect(evt) {
@@ -270,23 +258,23 @@ window.addEventListener('localized', function showPanel() {
         console.log('transferToDevice(): getMediaRequest.result = ' + getMediaRequest.result);
         defaultAdapter.sendFile(targetDevice.address, getMediaRequest.result);
         console.log('transferToDevice(): called sendFile():');
-        // In order to test StopSendingFile();
         activity.postResult('transferred');
         endTransfer();
       };
       
       getMediaRequest.onerror = function() {
         var errmsg = getRequest.error && getRequest.error.name;
-        console.log('transferToDevice(): getMediaRequest.errmsg = ' + errmsg);
-        cannotTransfer();
+        var msg = 'Get media request error: msg = ' + errmsg;
+        cannotTransfer(msg);
       };
       
     };
     
     transferRequest.onerror = function () {
-      console.log('transferToDevice(): transferRequest onerror');
-      cannotTransfer();
+      var msg = 'Can not get adapter connect!';
+      cannotTransfer(msg);
     };
+    showHidePairDeviceSelector(false);
     console.log('transferToDevice(): END!!!');
   }
 });

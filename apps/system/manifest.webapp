@@ -28,6 +28,9 @@
     "network-events",
     "embed-apps"
   ],
+  "messages": ["bluetooth-opp-receiving-file-confirmation",
+  			   "bluetooth-opp-transfer-complete",
+  			   "bluetooth-opp-update-progress"],
   "locales": {
     "ar": {
       "name": "System",
@@ -78,7 +81,5 @@
       "description": "Main System"
     }
   },
-  "default_locale": "en-US",
-  "messages": ["bluetooth-opp-transfer-complete",
-  			   "bluetooth-opp-update-progress"]
+  "default_locale": "en-US"
 }

@@ -10,6 +10,8 @@ var SystemUpdater = {
 
   init: function su_init() {
     window.addEventListener('mozChromeEvent', this);
+    // this.showStatus();
+    // UtilityTray.show();
   },
 
   showDownloadPrompt: function su_showDownloadPrompt() {

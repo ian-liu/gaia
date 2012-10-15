@@ -56,18 +56,6 @@ var Bluetooth = {
 
       enabled = value;
     });
-    console.log('=== SetMessageHandler === bluetooth-opp-transfer-complete!!!');
-    navigator.mozSetMessageHandler('bluetooth-opp-transfer-complete', 
-      function bt_gotTransferCompleteMessage(message) {
-        self.onTransferComplete(message);
-      }
-    );
-    console.log('=== SetMessageHandler === bluetooth-opp-update-progress!!!');
-    navigator.mozSetMessageHandler('bluetooth-opp-update-progress', 
-      function bt_gotUpdateProgressMessage(message) {
-        self.onUpdateProgress(message);
-      }
-    );
   },
 
   initDefaultAdapter: function bt_initDefaultAdapter() {
@@ -163,20 +151,6 @@ var Bluetooth = {
         {deviceConnected: this.connected});
       window.dispatchEvent(evt);
     }
-  },
-  
-  onTransferComplete: function bt_onTransferComplete(evt) {
-    console.log('=== onTransferComplete ===');
-    console.log('=== onTransferComplete success (bool) === ' + evt.success);
-    console.log('=== onTransferComplete received (bool) === ' + evt.received);
-    console.log('=== onTransferComplete filename (string) === ' + evt.filename);
-    console.log('=== onTransferComplete filelength (uint) === ' + evt.filelength);
-  },
-  
-  onUpdateProgress: function bt_onUpdateProgress(evt) {
-    console.log('=== onUpdateProgress ===');
-    console.log('=== onUpdateProgress sentlength (uint) === ' + evt.sentlength);
-    console.log('=== onUpdateProgress filelength (uint) === ' + evt.filelength);
   }
 };
 
