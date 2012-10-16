@@ -64,8 +64,11 @@ var RingView = {
     ringtonePlayer.loop = true;
     var selectedAlarmSound = 'style/ringtones/' +
                              window.opener.AlarmManager.getAlarmSound();
+    console.log('selectedAlarmSound = ' + selectedAlarmSound);                         
     ringtonePlayer.src = selectedAlarmSound;
+    console.log('set src');
     ringtonePlayer.play();
+    console.log('called play');
     /* If user don't handle the onFire alarm,
        pause the ringtone after 20 secs */
     window.setTimeout(function rv_pauseRingtone() {

@@ -746,7 +746,7 @@ var AlarmEditView = {
       minute: now.getMinutes(), // use current minute
       enabled: true,
       repeat: '0000000',
-      sound: 'ALARM_progressive_dapple.mp3',
+      sound: 'classic.ogg',
       snooze: 5,
       color: 'Darkorange'
     };
@@ -859,6 +859,7 @@ var AlarmEditView = {
     this.alarm.minute = this.timePicker.minute.getSelectedDisplayedText();
     this.alarm.repeat = this.getRepeatSelect();
     this.alarm.sound = this.getSoundSelect();
+    console.log('alarm.sound = ' + this.alarm.sound);
     this.alarm.snooze = parseInt(this.getSnoozeSelect());
 
     if (!error) {
