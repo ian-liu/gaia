@@ -1139,13 +1139,28 @@ MessageReaderCard.prototype = {
           if (!blob) {
             throw new Error('Blob does not exist');
           }
-          var activity = new MozActivity({
-            name: 'open',
-            data: {
-              type: attachment.mimetype,
-              blob: blob
-            }
-          });
+          var activity;
+          switch (attachment.mimetype) {
+          case 'application/pdf':
+            var url = URL.createObjectURL(blob);
+            activity = new MozActivity({
+              name: 'view',
+              data: {
+                type: attachment.mimetype,
+                url: url
+              }
+            });
+            break;
+          default:  // mimetype: image/*, audio/*, video/*
+            activity = new MozActivity({
+              name: 'open',
+              data: {
+                type: attachment.mimetype,
+                blob: blob
+              }
+            });
+            break;
+          }
           activity.onerror = function() {
             console.warn('Problem with "open" activity', activity.error.name);
           };
@@ -1336,7 +1351,8 @@ MessageReaderCard.prototype = {
         if (attachment.isDownloaded)
           state = 'downloaded';
         else if (/^image\//.test(attachment.mimetype) ||
-                 /^audio\//.test(attachment.mimetype))
+                 /^audio\//.test(attachment.mimetype) ||
+                 /\/pdf$/.test(attachment.mimetype))
           state = 'downloadable';
         else
           state = 'nodownload';
