@@ -134,14 +134,22 @@ var ValuePicker = (function() {
   //
   // Constructor
   //
-  function VP(e, unitStyle) {
+  function VP(e, unitStyle, isCircular) {
     this.element = e;
     this._valueDisplayedText = unitStyle.valueDisplayedText;
     this._unitClassName = unitStyle.className;
     this._lower = 0;
     this._upper = unitStyle.valueDisplayedText.length - 1;
+    console.log('--> lower = ' + this._lower);
+    console.log('--> upper = ' + this._upper);
     this._range = unitStyle.valueDisplayedText.length;
+    console.log('--> range = ' + this._range);
     this._currentIndex = 0;
+    this._isCircular = isCircular;
+    this._visibleItemsNum = 3;
+    this._currentGroupId = 0;
+    this._started = false;
+    this._deltaGroup = 0;
     this.init();
   }
 
@@ -159,22 +167,49 @@ var ValuePicker = (function() {
   };
 
   VP.prototype.setSelectedIndex = function(tunedIndex, ignorePicker) {
+    console.log('-->original tunedIndex = ' + tunedIndex);
+    console.log('--> ignorePicker = ' + ignorePicker);
     if ((tunedIndex % 1) > 0.5) {
       tunedIndex = Math.floor(tunedIndex) + 1;
     } else {
       tunedIndex = Math.floor(tunedIndex);
     }
+    console.log('-->after floor tunedIndex = ' + tunedIndex);
+    console.log('--> _lower = ' + this._lower);
+    console.log('--> _upper = ' + this._upper);
 
-    if (tunedIndex < this._lower) {
-      tunedIndex = this._lower;
+    if (this._isCircular) {
+      // if (tunedIndex > this._upper) {
+        // TODO: index in group 2
+        // tunedIndex = tunedIndex;
+        // if (tunedIndex > this._upper * 2) {
+          // tunedIndex = tunedIndex % this._range;
+          // TODO: go back to group 1
+        // }
+      // }
+
+      // if (tunedIndex < this._lower) {
+        // TODO: go back to group 2
+        // tunedIndex = tunedIndex + this._range; // Need to check..
+      // }
+
+    } else {
+      if (tunedIndex < this._lower) {
+        tunedIndex = this._lower;
+      }
+
+      if (tunedIndex > this._upper) {
+        tunedIndex = this._upper;
+      }
     }
 
-    if (tunedIndex > this._upper) {
-      tunedIndex = this._upper;
-    }
-
+    console.log('-->after l/u checking tunedIndex = ' + tunedIndex);
     this._currentIndex = tunedIndex;
+    console.log('--> !!_currentIndex = ' + this._currentIndex);
     this.updateUI(tunedIndex, ignorePicker);
+    // TODO: align layout
+    if (this._isCircular && !ignorePicker)
+      this.sortGroup();
 
     return tunedIndex;
   };
@@ -183,6 +218,7 @@ var ValuePicker = (function() {
     var newIndex = this._valueDisplayedText.indexOf(displayedText);
     if (newIndex != -1) {
       this._currentIndex = newIndex;
+      console.log('--> @@_currentIndex = ' + this._currentIndex);
       this.updateUI(newIndex);
     }
   };
@@ -193,40 +229,134 @@ var ValuePicker = (function() {
   VP.prototype.init = function() {
     this.initUI();
     this.setSelectedIndex(0); // Default Index is zero
+
     this.mousedownHandler = vp_mousedown.bind(this);
     this.mousemoveHandler = vp_mousemove.bind(this);
     this.mouseupHandler = vp_mouseup.bind(this);
     this.transitionendHandler = vp_transitionend.bind(this);
     this.addEventListeners();
+    this._started = true;
   };
 
   VP.prototype.initUI = function() {
     var lower = this._lower;
     var upper = this._upper;
     var unitCount = this._valueDisplayedText.length;
-    for (var i = 0; i < unitCount; ++i) {
-      this.addPickerUnit(i);
+    // for (var i = 0; i < unitCount; ++i) {
+    //   this.addPickerUnit(i);
+    // }
+    this.addPickerUnit(unitCount, 0, 'red');
+
+    // prepare second picker for circular mode
+    if (this._isCircular) {
+      // for (var i = 0; i < unitCount; ++i) {
+      //   this.addPickerUnit(i, true);
+      // }
+      this.addPickerUnit(unitCount, 1, 'green');
+      this.addPickerUnit(unitCount, 2, 'blue');
     }
+
     // cache the size of picker
-    this._pickerUnits = this.element.children;
+    this._pickerGroups = this.element.children;
+    console.log('--> pickerGroups = ' + this._pickerGroups);
+    this._pickerUnits = this._pickerGroups[0].children;
+    console.log('--> _pickerUnits = ' + this._pickerUnits);
     this._pickerUnitsHeight = this._pickerUnits[0].clientHeight;
     this._pickerHeight = this.element.clientHeight;
-    this._space = this._pickerHeight / this._range;
+    console.log('--> _pickerHeight = ' + this._pickerHeight);
+    var range = (this._isCircular) ? (this._range * 3) : (this._range);
+    this._space = this._pickerHeight / range;
+    console.log('--> _range = ' + this._range);
+    console.log('--> _space = ' + this._space);
   };
 
-  VP.prototype.addPickerUnit = function(index) {
-    var html = this._valueDisplayedText[index];
-    var unit = document.createElement('div');
-    unit.className = this._unitClassName;
-    unit.innerHTML = html;
-    this.element.appendChild(unit);
+  VP.prototype.addPickerUnit = function(unitCount, groupId, color) {
+    var group = document.createElement('div');
+    // var groupId = (isSecondGroup) ? '1' : '0';
+    console.log('--> create groupId = ' + groupId);
+    group.setAttribute('data-group', groupId);
+    group.style.border = 'thick solid ' + color;
+
+    for (var i = 0; i < unitCount; ++i) {
+      var html = this._valueDisplayedText[i];
+      var unit = document.createElement('div');
+      unit.className = this._unitClassName;
+      // var groupId = (isSecondGroup) ? '1' : '0';
+      // unit.setAttribute('data-group', groupId);
+      unit.innerHTML = html;
+      group.appendChild(unit);
+    }
+
+    this.element.appendChild(group);
+  };
+
+  VP.prototype.sortGroup = function(currentIndex) {
+    console.log('--> currentIndex = ' + this._currentIndex);
+    // Get current focus group by index
+    var active = this.element.querySelectorAll('.active');
+    console.log('--> active = ' + active);
+    var groupId = active[0].parentNode.getAttribute('data-group');
+    console.log('--> groupId = ' + groupId);
+    var centralGroupId = Math.floor(this.element.childNodes.length / 2);
+    console.log('--> centralGroupId = ' + centralGroupId);
+    var deltaGroup = groupId - centralGroupId;
+    this._deltaGroup = deltaGroup;
+    if (deltaGroup == 0) {
+      console.log('--> No need to sortGroup()...');
+      return;
+    }
+
+
+    var movingGroupId = centralGroupId - deltaGroup;
+
+    console.log('--> deltaGroup = ' + deltaGroup);
+    console.log('--> movingGroupId = ' + movingGroupId);
+    console.log('--> removing this.element.lastChild.getAttribute data-group = ' + this.element.lastChild.getAttribute('data-group'));
+    var throwawayNode = this.element.removeChild(this.element.childNodes[movingGroupId]); //children[movingGroupId]
+    console.log('--> throwaway NodegetAttribute data-group = ' + throwawayNode.getAttribute('data-group'));
+    // console.log('--> throwawayNode.length = ' + throwawayNode.length);
+    console.log('--> this.element.childNodes.length = ' + this.element.childNodes.length);
+    console.log('--> removing this.element.firstChild.getAttribute data-group = ' + this.element.firstChild.getAttribute('data-group'));
+    if (groupId < centralGroupId)
+      this.element.insertBefore(throwawayNode, this.element.childNodes[groupId]); // this.element.firstChild
+    else
+      this.element.insertBefore(throwawayNode, this.element.childNodes[groupId].nextSibling);
+
+    console.log('--> this.element.childNodes.length = ' + this.element.childNodes.length);
+
+    for (var i = 0; i < this.element.childNodes.length; ++i) {
+      this.element.childNodes[i].setAttribute('data-group', i);
+    }
+    console.log('--> ((-1) * deltaGroup) = ' + ((-1) * deltaGroup));
+    this.element.style.top = deltaGroup * this._range * this._space + 'px';
+
+
+    // Refresh the currentIndex since it's already in the central group
+    // this._currentIndex = this._currentIndex + deltaGroup * this._range;
+    this._currentGroupId = 1;
+    console.log('--> _currentIndex = ' + this._currentIndex);
+
   };
 
   VP.prototype.updateUI = function(index, ignorePicker) {
     this.resetUI();
+    if (ignorePicker)
+      console.log('--> ignorePicker === true');
+
     if (true !== ignorePicker) {
-      this.element.style.top =
-            (this._lower - index) * this._space + 'px';
+      console.log('--> _space = ' + this._space);
+      console.log('--> (this._lower - index) = ' + (this._lower - index));
+      console.log('--> _deltaGroup = ' + this._deltaGroup);
+      console.log('--> _pickerUnitsHeight = ' + this._pickerUnitsHeight);
+      var pickerGroupHeight = this.element.childNodes[0].clientHeight;
+      var active = this.element.querySelectorAll('.active');
+      console.log('--> active = ' + active);
+      var groupId = active[0].parentNode.getAttribute('data-group');
+      var groupOffset = groupId * (-1);
+      var offestY = Math.floor((this._lower - index) * this._space + (groupOffset * pickerGroupHeight)) + 'px';
+      console.log('--> offestY = ' + offestY);
+      this.element.style.top = offestY;
+
     }
   };
 
@@ -244,7 +374,21 @@ var ValuePicker = (function() {
     for (var i = 0; i < actives.length; i++) {
       actives[i].classList.remove('active');
     }
-    this._pickerUnits[this._currentIndex].classList.add('active');
+    // console.log('--> 1 _currentIndex = ' + this._currentIndex);
+    // console.log('--> 2 _range = ' + this._range);
+    // var groupId = Math.floor(this._currentIndex / this._range);
+    // console.log('--> groupId = ' + groupId);
+    console.log('--> _currentIndex = ' + this._currentIndex);
+    console.log('--> _currentGroupId = ' + this._currentGroupId);
+    // var group = (this._started) ?   : this._currentGroupId;
+
+    var pickerUnits = this.element.childNodes[this._currentGroupId].childNodes;
+    var index = this._currentIndex % this._range;
+    console.log('--> index = ' + index);
+    console.log('--> pickerUnits = ' + pickerUnits);
+    console.log('--> pickerUnits[index] = ' + pickerUnits[index]);
+    pickerUnits[index].classList.add('active');
+    // console.log('--> 2 _pickerUnits = ' + this._pickerUnits);
   };
 
   function cloneEvent(evt) {
@@ -274,6 +418,7 @@ var ValuePicker = (function() {
   }
 
   function calcTargetIndex(space) {
+    console.log('--> calcTargetIndex(): tunedIndex = ' + tunedIndex);
     return tunedIndex - getMovingSpace() / space;
   }
 
@@ -304,6 +449,7 @@ var ValuePicker = (function() {
                               getMovingSpace() + 'px';
 
     tunedIndex = calcTargetIndex(this._space);
+    console.log('--> move(): tunedIndex = ' + tunedIndex);
     var roundedIndex = Math.round(tunedIndex * 10) / 10;
 
     if (roundedIndex != this._currentIndex) {
@@ -327,7 +473,9 @@ var ValuePicker = (function() {
       var direction = currentSpeed > 0 ? 1 : -1;
       tunedIndex += Math.min(Math.abs(currentSpeed) * 5, 5) * direction;
     }
+    console.log('--> up(): b tunedIndex = ' + tunedIndex);
     tunedIndex = this.setSelectedIndex(toFixed(tunedIndex));
+    console.log('--> up(): a tunedIndex = ' + tunedIndex);
     currentSpeed = 0;
   }
 

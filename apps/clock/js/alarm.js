@@ -163,9 +163,15 @@ var ClockView = {
     switch (evt.type) {
       case 'mozvisibilitychange':
         if (document.mozHidden) {
-          window.clearTimeout(this._updateDaydateTimeout);
-          window.clearTimeout(this._updateDigitalClockTimeout);
-          window.clearTimeout(this._updateAnalogClockTimeout);
+          if (this._updateDaydateTimeout)
+            window.clearTimeout(this._updateDaydateTimeout);
+
+          if (this._updateDigitalClockTimeout)
+            window.clearTimeout(this._updateDigitalClockTimeout);
+
+          if (this._updateAnalogClockTimeout)
+            window.clearTimeout(this._updateAnalogClockTimeout);
+
           return;
         } else if (!document.mozHidden) {
           // Refresh the view when app return to foreground.
@@ -199,8 +205,9 @@ var ClockView = {
   showAnalogClock: function cv_showAnalogClock() {
     if (this._clockMode !== 'analog')
       asyncStorage.setItem(SETTINGS_CLOCKMODE, 'analog');
+    if (this._updateDigitalClockTimeout)
+      window.clearTimeout(this._updateDigitalClockTimeout);
 
-    window.clearTimeout(this._updateDigitalClockTimeout);
     this.digitalClock.classList.remove('visible');
     this.digitalClockBackground.classList.remove('visible');
     this.resizeAnalogClock();
@@ -778,7 +785,7 @@ var AlarmEditView = {
       valueDisplayedText: hourDisplayedText,
       className: unitClassName
     };
-    this.timePicker.hour = new ValuePicker(this.hourSelector, hourUnitStyle);
+    this.timePicker.hour = new ValuePicker(this.hourSelector, hourUnitStyle, true);
 
     var minuteDisplayedText = [];
     for (var i = 0; i < 60; i++) {
@@ -818,7 +825,7 @@ var AlarmEditView = {
         ClockView.show();
         if (!this.save()) {
           evt.preventDefault();
-          return false;
+          // return false;
         }
         break;
       case 'repeat-menu':
@@ -915,11 +922,12 @@ var AlarmEditView = {
       hour = (hour === 0) ? 12 : hour;
       // 24-hour state value selector: AM = 0, PM = 1
       var hour24State = (alarm.hour >= 12) ? 1 : 0;
-      this.timePicker.hour.setSelectedIndexByDisplayedText(hour);
+      // this.timePicker.hour.setSelectedIndexByDisplayedText(hour);
       this.timePicker.hour24State.setSelectedIndex(hour24State);
     } else {
-      this.timePicker.hour.setSelectedIndex(alarm.hour);
+      // this.timePicker.hour.setSelectedIndex(alarm.hour);
     }
+    // this.timePicker.hour.setSelectedIndex(1);
     this.timePicker.minute.setSelectedIndex(alarm.minute);
     // Init repeat, sound, snooze selection menu.
     this.initRepeatSelect();
