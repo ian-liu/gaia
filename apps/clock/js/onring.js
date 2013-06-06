@@ -1,6 +1,7 @@
 /* -*- Mode: Java; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 'use strict';
+console.log('--> before define RingView{}');
 
 var RingView = {
 
@@ -36,32 +37,46 @@ var RingView = {
   },
 
   init: function rv_init() {
+    console.log('--> init(): before addEventListener mozvisibilitychange');
     document.addEventListener('mozvisibilitychange', this);
+    console.log('--> init(): after addEventListener mozvisibilitychange');
     this._onFireAlarm = window.opener.ActiveAlarmController.getOnFireAlarm();
+    console.log('--> init(): _onFireAlarm = ' + this._onFireAlarm);
     if (!document.mozHidden) {
+      console.log('--> init(): !document.mozHidden before startAlarmNotification');
       this.startAlarmNotification();
+      console.log('--> init(): !document.mozHidden after startAlarmNotification');
     } else {
       // The setTimeout() is used to workaround
       // https://bugzilla.mozilla.org/show_bug.cgi?id=810431
       // The workaround is used in screen off mode.
       // mozHidden will be true in init() state.
       var self = this;
+      console.log('--> init(): document.mozHidden before rv_checkMozHidden');
       window.setTimeout(function rv_checkMozHidden() {
       // If mozHidden is true in init state,
       // it means that the incoming call happens before the alarm.
       // We should just put a "silent" alarm screen
       // underneath the oncall screen
+        console.log('--> init(): rv_checkMozHidden(): before document.mozHidden');
         if (!document.mozHidden) {
+          console.log('--> init(): rv_checkMozHidden(): !document.mozHidden before startAlarmNotification');
           self.startAlarmNotification();
+          console.log('--> init(): rv_checkMozHidden(): !document.mozHidden after startAlarmNotification');
         }
         // Our final chance is to rely on visibilitychange event handler.
       }, 0);
     }
 
+    console.log('--> init(): before setAlarmTime():');
     this.setAlarmTime();
+    console.log('--> init(): after setAlarmTime():');
     this.setAlarmLabel();
+    console.log('--> init(): after setAlarmLabel():');
     this.snoozeButton.addEventListener('click', this);
+    console.log('--> init(): after snoozeButton.addEventListener');
     this.closeButton.addEventListener('click', this);
+    console.log('--> init(): after closeButton.addEventListener');
   },
 
   setWakeLockEnabled: function rv_setWakeLockEnabled(enabled) {
@@ -81,26 +96,35 @@ var RingView = {
   },
 
   setAlarmTime: function rv_setAlarmTime() {
+    console.log('--> setAlarmTime(): before getAlarmTime():');
     var alarmTime = this.getAlarmTime();
+    console.log('--> setAlarmTime(): after getAlarmTime(): alarmTime = ' + alarmTime);
     var time = getLocaleTime(alarmTime);
+    console.log('--> setAlarmTime(): time.t = ' + time.t);
+    console.log('--> setAlarmTime(): time.p = ' + time.p);
     this.time.textContent = time.t;
     this.hourState.textContent = time.p;
   },
 
   setAlarmLabel: function rv_setAlarmLabel() {
     this.alarmLabel.textContent = this.getAlarmLabel();
+    console.log('--> setAlarmLabel(): getAlarmLabel = ' + this.getAlarmLabel());
   },
 
   ring: function rv_ring() {
     this._ringtonePlayer = new Audio();
+    console.log('--> ring(): _ringtonePlayer = ' + this._ringtonePlayer);
     var ringtonePlayer = this._ringtonePlayer;
     ringtonePlayer.addEventListener('mozinterruptbegin', this);
     ringtonePlayer.mozAudioChannelType = 'alarm';
     ringtonePlayer.loop = true;
+    console.log('--> ring(): set ringtonePlayer.loop = true');
     var selectedAlarmSound = 'shared/resources/media/alarms/' +
                              this.getAlarmSound();
+    console.log('--> ring(): selectedAlarmSound = ' + selectedAlarmSound);
     ringtonePlayer.src = selectedAlarmSound;
     ringtonePlayer.play();
+    console.log('--> ring(): called play():');
     /* If user don't handle the onFire alarm,
        pause the ringtone after 15 minutes */
     var self = this;
@@ -115,6 +139,7 @@ var RingView = {
       this._vibrateInterval = window.setInterval(function vibrate() {
         navigator.vibrate([1000]);
       }, 2000);
+      console.log('--> vibrate(): enabled vibrate!!!');
       /* If user don't handle the onFire alarm,
        turn off vibration after 15 minutes */
       var self = this;
@@ -123,17 +148,23 @@ var RingView = {
         self.stopAlarmNotification('vibrate');
       }, duration);
     }
+    console.log('--> vibrate(): leaving vibrate():');
   },
 
   startAlarmNotification: function rv_startAlarmNotification() {
     // Ensure called only once.
+    console.log('--> startAlarmNotification(): this._started = ' + this._started);
     if (this._started)
       return;
 
     this._started = true;
+    console.log('--> startAlarmNotification(): before setWakeLockEnabled true');
     this.setWakeLockEnabled(true);
+    console.log('--> startAlarmNotification(): after setWakeLockEnabled true');
     this.ring();
+    console.log('--> startAlarmNotification(): after ring()');
     this.vibrate();
+    console.log('--> startAlarmNotification(): after vibrate()');
   },
 
   stopAlarmNotification: function rv_stopAlarmNotification(action) {
@@ -180,7 +211,9 @@ var RingView = {
     case 'mozvisibilitychange':
       // There's chance to miss the mozHidden state when inited,
       // before setVisible take effects, there may be a latency.
+      console.log('--> mozvisibilitychange document.mozHidden = ' + document.mozHidden);
       if (!document.mozHidden) {
+        console.log('--> mozvisibilitychange call this.startAlarmNotification():');
         this.startAlarmNotification();
       }
       break;
@@ -189,6 +222,7 @@ var RingView = {
       // event on the 'alarm' channel audio element.
       // If the incoming call happens after the alarm rings,
       // we need to close ourselves.
+      console.log('--> mozinterruptbegin call stopAlarmNotification():');
       this.stopAlarmNotification();
       window.close();
       break;
@@ -214,9 +248,13 @@ var RingView = {
 
 };
 
+console.log('--> before addEventListener for localized');
 window.addEventListener('localized', function showBody() {
+  console.log('--> before remove localized');
   window.removeEventListener('localized', showBody);
+  console.log('--> after remove localized');
   RingView.init();
+  console.log('--> after init():');
 });
 
-
+console.log('--> after addEventListener for localized');
