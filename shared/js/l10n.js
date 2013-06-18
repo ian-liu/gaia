@@ -863,9 +863,8 @@
   // translate an HTML element
   function translateElement(element) {
     var l10n = getL10nAttributes(element);
-    if (!l10n.id) {
-        return;
-    }
+    if (!l10n.id)
+      return;
 
     // get the related l10n object
     var data = getL10nData(l10n.id, l10n.args);
@@ -945,6 +944,18 @@
     }
   }
 
+  // trigger a callback when the document is localized
+  function l10nReady(callback) {
+    if (!callback)
+      return;
+
+    if (gReadyState == 'complete') {
+      window.setTimeout(callback);
+    } else {
+      window.addEventListener('localized', callback);
+    }
+  }
+
   // the B2G build system doesn't expose any `document'...
   if (typeof(document) !== 'undefined') {
     if (document.readyState === 'complete' ||
@@ -993,21 +1004,33 @@
     // translate an element or document fragment
     translate: translateFragment,
 
+    // localize an element (asynchronously)
+    localize: function l10n_localize(element, id, args) {
+      if (!element)
+        return;
+
+      if (id) {
+        element.dataset.l10nId = id;
+      } else {
+        element.dataset.l10nId = '';
+        element.textContent = '';
+      }
+
+      if (args) {
+        element.dataset.l10nArgs = JSON.stringify(args);
+      } else {
+        element.dataset.l10nArgs = '';
+      }
+
+      l10nReady(translateElement.bind(null, element));
+    },
+
     // get (a clone of) the dictionary for the current locale
     get dictionary() { return JSON.parse(JSON.stringify(gL10nData)); },
 
     // this can be used to prevent race conditions
     get readyState() { return gReadyState; },
-    ready: function l10n_ready(callback) {
-      if (!callback)
-        return;
-
-      if (gReadyState == 'complete') {
-        window.setTimeout(callback);
-      } else {
-        window.addEventListener('localized', callback);
-      }
-    }
+    ready: l10nReady
   };
 
   consoleLog('library loaded.');
