@@ -211,11 +211,11 @@ var AlarmEdit = {
 
     if (!alarm) {
       this.element.classList.add('new');
-      this.alarmTitle.textContent = _('newAlarm');
+      this.alarmTitle.textContent = localize(this.alarmTitle, 'newAlarm');
       alarm = this.getDefaultAlarm();
     } else {
       this.element.classList.remove('new');
-      this.alarmTitle.textContent = _('editAlarm');
+      this.alarmTitle.textContent = localize(this.alarmTitle, 'editAlarm');
     }
     this.alarm = alarm;
 
@@ -284,9 +284,10 @@ var AlarmEdit = {
     // Refresh and parse the name of sound file for sound menu.
     sound = (sound !== undefined) ? sound : this.alarm.sound;
     // sound could either be string or int, so test for both
-    this.soundMenu.textContent = (sound === 0 || sound === '0') ?
-                               _('noSound') :
-                               _(sound.replace('.', '_'));
+    var menu = this.soundMenu;
+    menu.textContent = (sound === 0 || sound === '0') ?
+                       localize(menu, 'noSound') :
+                       localize(menu, sound.replace('.', '_'));
   },
 
   previewSound: function aev_previewSound() {
@@ -321,9 +322,10 @@ var AlarmEdit = {
   refreshVibrateMenu: function aev_refreshVibrateMenu(vibrate) {
     vibrate = (vibrate !== undefined) ? vibrate : this.alarm.vibrate;
     // vibrate could be either string or int, so test for both
-    this.vibrateMenu.textContent = (vibrate === 0 || vibrate === '0') ?
-                                 _('vibrateOff') :
-                                 _('vibrateOn');
+    var menu = this.vibrateMenu;
+    menu.textContent = (vibrate === 0 || vibrate === '0') ?
+                       localize(menu, 'vibrateOff') :
+                       localize(menu, 'vibrateOn');
   },
 
   initSnoozeSelect: function aev_initSnoozeSelect() {
@@ -336,7 +338,8 @@ var AlarmEdit = {
 
   refreshSnoozeMenu: function aev_refreshSnoozeMenu(snooze) {
     snooze = (snooze) ? this.getSnoozeSelect() : this.alarm.snooze;
-    this.snoozeMenu.textContent = _('nMinutes', {n: snooze});
+    var menu = this.snoozeMenu;
+    menu.textContent = localize(menu, 'nMinutes', {n: snooze});
   },
 
   save: function aev_save(callback) {

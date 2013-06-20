@@ -1,6 +1,5 @@
 'use strict';
 
-var _ = navigator.mozL10n.get;
 var SETTINGS_CLOCKMODE = 'settings_clockoptions_mode';
 
 var ClockView = {

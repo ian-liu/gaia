@@ -1,5 +1,13 @@
 'use strict';
 
+/**
+ * L10n helper
+ */
+
+var localize = navigator.mozL10n.localize;
+var l10nReady = navigator.mozL10n.ready;
+var _ = navigator.mozL10n.get;
+
 function escapeHTML(str, escapeQuotes) {
   var span = document.createElement('span');
   span.textContent = str;
@@ -10,8 +18,6 @@ function escapeHTML(str, escapeQuotes) {
 }
 
 function summarizeDaysOfWeek(bitStr) {
-  var _ = navigator.mozL10n.get;
-
   if (bitStr == '')
     return _('never');
 
