@@ -10,6 +10,9 @@ marionette('manipulate keyboard settings', function() {
   var keyboardPanel;
 
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     keyboardApp = new KeyboardApp(client);
     settingsApp = new Settings(client);
     settingsApp.launch();

@@ -12,6 +12,8 @@ marionette('manipulate sound settings', function() {
 
     client.contentScript.inject(__dirname +
       '/../mocks/mock_navigator_moz_telephony.js');
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
 
     settingsApp.launch();
     // Navigate to the sound menu

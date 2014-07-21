@@ -9,6 +9,9 @@ marionette('manipulate language settings', function() {
   var languagePanel;
 
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     settingsApp = new Settings(client);
     settingsApp.launch();
     languagePanel = settingsApp.languagePanel;

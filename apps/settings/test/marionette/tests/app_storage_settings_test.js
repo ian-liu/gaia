@@ -8,6 +8,9 @@ marionette('manipulate app storage settings', function() {
   var appStoragePanel;
 
   function gotoAppStoragePanel() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     settingsApp = new Settings(client);
     settingsApp.launch();
     // Navigate to the Support menu

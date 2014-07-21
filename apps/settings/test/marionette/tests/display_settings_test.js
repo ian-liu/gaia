@@ -11,6 +11,9 @@ marionette('manipulate display settings', function() {
   var displayPanel;
 
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     systemApp = new SystemApp(client);
     settingsApp = new Settings(client);
     settingsApp.launch();

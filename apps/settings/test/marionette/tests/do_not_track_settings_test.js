@@ -9,6 +9,9 @@ marionette('manipulate do not track settings', function() {
   var doNotTrackPanel;
 
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     settingsApp = new Settings(client);
     settingsApp.launch();
     // Navigate to the Do Not Track menu

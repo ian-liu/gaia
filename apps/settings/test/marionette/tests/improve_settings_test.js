@@ -7,6 +7,9 @@ marionette('improve b2g', function() {
   var improvePanel;
   var feedbackPanel;
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     settingsApp = new Settings(client);
     settingsApp.launch();
     // Navigate to the Improve panel

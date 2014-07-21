@@ -12,7 +12,6 @@
   paths: {
     'prim': 'empty:',
     'settings': 'empty:',
-    'connectivity': 'empty:',
     'shared/async_storage': 'empty:',
     'shared/icc_helper': 'empty:',
     'shared/lazy_loader': 'empty:',

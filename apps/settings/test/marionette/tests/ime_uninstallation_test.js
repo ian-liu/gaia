@@ -20,6 +20,9 @@ marionette('Uninstall an ime app', function() {
   var appPermissionPanel;
 
   setup(function() {
+    client.contentScript.inject(__dirname +
+      '/../mocks/mock_navigator_moz_bluetooth.js');
+
     systemApp = new SystemApp(client);
     settingsApp = new Settings(client);
 
