@@ -1,5 +1,3 @@
-/* global Event */
-
 'use strict';
 var Settings = require('../app/app');
 var BluetoothApp = require('../app/bluetooth_app');
@@ -30,17 +28,17 @@ marionette('manipulate bluetooth settings', function() {
     // XXX: https://bugzilla.mozilla.org/show_bug.cgi?id=1048167
     // Since Bug 1048167 is blocking, we use 'client.executeScript' instead of
     // triggering 'click' event from element directly.
-    // bluetoothApp.goBackToSettingsApp();
+    bluetoothApp.goBackToSettingsApp();
 
     // Below script is to trigger click event on the back button correctly
-    client.executeScript(function(el) {
-      console.log('el = ' + el);
-      var evt = new Event('click', {
-        cancelable: true,
-        bubbles: true
-      });
-      el.dispatchEvent(evt);
-    }, [bluetoothApp.backButton]);
+    // client.executeScript(function(el) {
+    //   console.log('el = ' + el);
+    //   var evt = new Event('click', {
+    //     cancelable: true,
+    //     bubbles: true
+    //   });
+    //   el.dispatchEvent(evt);
+    // }, [bluetoothApp.backButton]);
 
     // switch back to settings frame and verify
     settingsApp.switchTo();
