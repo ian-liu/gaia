@@ -199,7 +199,7 @@ define('about_more_info', function(require) {
             if (BluetoothAPIVersionDetector.getVersion() === 1) {
               bluetoothModulePath = 'modules/bluetooth/bluetooth_v1';
             } else if (BluetoothAPIVersionDetector.getVersion() === 2) {
-              bluetoothModulePath = 'modules/bluetooth/bluetooth';
+              bluetoothModulePath = 'modules/bluetooth/bt_context';
             }
 
             if (bluetoothModulePath) {

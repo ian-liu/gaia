@@ -23,6 +23,8 @@ define(function(require) {
      * @return {number}
      */
     getVersion: function() {
+      console.log('--> NavigatorBluetooth.onattributechanged = ' + 
+                  NavigatorBluetooth.onattributechanged);
       if (!NavigatorBluetooth) {
         console.error('[VersionDetector]: ' +
                       'navigator.mozBluetooth is not existed!!');

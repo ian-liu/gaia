@@ -103,7 +103,7 @@ require.config({
         'main',
         'modules/battery',
         'modules/bluetooth/bluetooth_v1',
-        'modules/bluetooth/bluetooth',
+        'modules/bluetooth/bt_context',
         'modules/apps_cache'
       ]
     },

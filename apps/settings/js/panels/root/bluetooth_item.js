@@ -65,7 +65,8 @@ define(function(require) {
           if (this._APIVersion() === 1) {
             bluetoothModulePath = 'modules/bluetooth/bluetooth_v1';
           } else if (this._APIVersion() === 2) {
-            bluetoothModulePath = 'modules/bluetooth/bluetooth';
+            console.log('---> loading.. modules/bluetooth/bt_context');
+            bluetoothModulePath = 'modules/bluetooth/bt_context';
           }
 
           require([bluetoothModulePath], resolve);
@@ -89,6 +90,7 @@ define(function(require) {
       }
 
       this._getBluetooth().then(function(bluetooth) {
+        console.log('--> onResolve: bluetooth = ' + bluetooth);
         if (bluetooth.enabled) {
           if (bluetooth.numberOfPairedDevices === 0) {
             element.setAttribute('data-l10n-id', 'bt-status-nopaired');
@@ -150,6 +152,7 @@ define(function(require) {
         SettingsService.navigate('bluetooth');
       } else if (this._APIVersion() === 2) {
         // navigate new bluetooth panel..
+        console.log('--> navigate bluetooth_v2 panel');
         SettingsService.navigate('bluetooth_v2');
       }
     }
