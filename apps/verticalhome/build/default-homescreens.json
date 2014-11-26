@@ -12,6 +12,7 @@
       ["apps/collection/collections", "games"],
       ["apps/collection/collections", "music"]
     ], [
+      ["apps", "bluetooth"],
       ["apps", "gallery"],
       ["apps", "music"],
       ["apps", "video"],

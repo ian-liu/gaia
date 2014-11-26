@@ -1,10 +1,12 @@
 /* -*- Mode: js; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- /
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
-/* global BluetoothHelper, PairManager, PairExpiredDialog, Notification */
 
 'use strict';
 
-(function(exports) {
+define(function(require) {
+
+  var PairExpiredDialog = require('views/pair_expired_dialog');
+  var BluetoothHelper = require('shared/bluetooth_helper');
 
   var _ = window.navigator.mozL10n.get;
   var _debug = false;
@@ -51,6 +53,7 @@
     },
 
     onRequestPairing: function(pairingInfo) {
+      console.log('--> onRequestPairing pairingInfo = ' + pairingInfo);
       this.debug('onRequestPairing(): pairingInfo = ' + pairingInfo);
 
       var req = navigator.mozSettings.createLock().get('lockscreen.locked');
@@ -269,8 +272,11 @@
     }
   };
 
-  exports.PairManager = PairManager;
+  return PairManager;
+});
 
-})(window);
-
-navigator.mozL10n.once(PairManager.init.bind(PairManager));
+// navigator.mozL10n.once(function() {
+//   require(['pair_manager'], function(PairManager) {
+//     PairManager.init();
+//   });
+// });

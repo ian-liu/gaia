@@ -1,9 +1,8 @@
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
-/* global PairExpiredDialog */
 
 'use strict';
 
-(function(exports) {
+define(function(require) {
   /*
    * PairExpiredDialog is responsible for:
    *   Notify a user that the earlier pairing request which fired in
@@ -36,8 +35,11 @@
     }
   };
 
-  exports.PairExpiredDialog = PairExpiredDialog;
+  return PairExpiredDialog;
+});
 
-})(window);
-
-navigator.mozL10n.once(PairExpiredDialog.init.bind(PairExpiredDialog));
+// navigator.mozL10n.once(function() {
+//   require(['pair_expired_dialog'], function(PairExpiredDialog) {
+//     PairExpiredDialog.init();
+//   });
+// });
