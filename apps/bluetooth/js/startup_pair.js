@@ -14,5 +14,10 @@
 console.log('--> hello AMD is ready.. :-)');
 
 // var PairManager = require('modules/pair_manager');
-require('mooo');
+navigator.mozSetMessageHandler('bluetooth-pairing-request', function() {
+  console.log('--> got "bluetooth-pairing-request" system message here.. :-)');
+  require('mooo');	
+});
+
+// require('mooo');
 // var BluetoothHelper = require('shared/bluetooth_helper');

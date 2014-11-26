@@ -1,7 +1,8 @@
 {
   "name": "Bluetooth Manager",
   "type": "certified",
-  "launch_path": "/message.html",
+  "role": "system",
+  "launch_path": "/settings.html",
   "description": "Gaia Bluetooth Manager",
   "developer": {
     "name": "The Gaia Team",
